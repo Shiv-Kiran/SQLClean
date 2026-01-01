@@ -1,0 +1,10 @@
+[project]
+name = "sqlclean"
+version = "0.1.0"
+dependencies = [
+    "typer[all]",
+    "google-genai",
+]
+
+[project.scripts]
+sqlclean = "sqlClean:app"
