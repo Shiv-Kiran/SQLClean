@@ -1,18 +1,8 @@
 import sys
 import typer
-from google import genai
-from google.genai import types
-from dotenv import load_dotenv
-import os
+from sql_optimizer import optimize_sql
 
-app = typer.Typer()
-
-load_dotenv()
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-
-# 1. Initialize Client
-# Best practice: Set export GOOGLE_API_KEY="your_key" in your terminal
-client = genai.Client(api_key=GOOGLE_API_KEY) 
+app = typer.Typer() 
 
 # Define the Senior DBA Persona
 SYSTEM_PROMPT = """
@@ -51,17 +41,10 @@ def clean(file: str = typer.Argument(None, help="Path to the SQL file. If omitte
 
     # 3. Call the LLM with System Instructions
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=sql_input,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.1, # Keep it deterministic for code
-            )
-        )
+        optimized = optimize_sql(sql_input)
         
         # 4. Output to user
-        typer.echo(response.text)
+        typer.echo(optimized)
     except Exception as e:
         typer.echo(f"API Error: {e}", err=True)
         raise typer.Exit(1)

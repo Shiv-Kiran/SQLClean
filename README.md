@@ -75,10 +75,11 @@ sqlclean input.sql > optimized.sql
 
 ```text
 SQL_Cli/
-├── sqlclean.py      # Core logic and CLI definitions
-├── pyproject.toml   # Project metadata and dependency management
-├── .gitignore       # Git exclusion rules
-└── README.md        # Project documentation
+├── sqlClean.py      # CLI tool (Typer)
+├── webapp.py        # Web app (Streamlit)
+├── pyproject.toml   # Add "streamlit" to dependencies
+├── .env             # Store your API key here
+└── README.md
 
 ```
 
