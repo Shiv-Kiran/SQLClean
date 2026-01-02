@@ -8,6 +8,7 @@ A minimalist tool designed to optimize and format SQL queries using Google's Gem
 * **Standardized Formatting**: Enforces consistent casing and indentation for improved maintainability.
 * **CLI Integration**: Designed to fit into developer workflows via Unix pipes and standard input/output.
 * **Modern AI Backend**: Powered by the Gemini 2.5 Flash model for rapid, accurate code analysis.
+* **SQL Defensive Check**: Incorporates `sqlglot` to validate and parse SQL queries before optimization.
 
 ## Installation
 

@@ -4,16 +4,6 @@ from sql_optimizer import optimize_sql
 
 app = typer.Typer() 
 
-# Define the Senior DBA Persona
-SYSTEM_PROMPT = """
-You are a Senior Database Administrator and SQL Optimization expert.
-Your goal is to:
-1. Prettify the SQL (proper indentation, capitalization of keywords).
-2. Performance Optimize the SQL (suggest JOINs over subqueries, avoid SELECT *, etc.).
-3. Return ONLY the optimized SQL code. Do not include explanations unless asked.
-4. If the SQL is already perfect, return it as is.
-"""
-
 @app.command()
 def clean(file: str = typer.Argument(None, help="Path to the SQL file. If omitted, reads from pipe (stdin).")):
     """
