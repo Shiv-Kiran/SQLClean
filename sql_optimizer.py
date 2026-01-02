@@ -1,30 +1,46 @@
 import os
 import sqlglot
+from sqlglot import exp
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
 load_dotenv()
-
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 SYSTEM_PROMPT = """
-You are a Senior Database Administrator and SQL Optimization expert.
-Your goal is to:
-1. Prettify the SQL (proper indentation, capitalization of keywords).
-2. Performance Optimize the SQL (suggest JOINs over subqueries, avoid SELECT *, etc.).
-3. Return ONLY the optimized SQL code. Do not include explanations.
+You are a Senior DBA. Optimize the provided SQL for performance and readability.
+- Return ONLY the optimized SQL. 
+- If the input is not SQL, politely explain what it is and offer to convert it if relevant.
+- Ensure standard keyword capitalization (SELECT, FROM, JOIN).
 """
 
-def optimize_sql(sql_input, temperature=0.1, max_retries=2):
-    current_input = sql_input
-    attempts = 0
+def is_valid_sql(text):
+    """Checks if the input text resembles a SQL statement."""
+    try:
+        # We use parse_one; if it's just 'hello', it parses as an Identifier.
+        # Real SQL usually parses as a Statement/Select/Command.
+        parsed = sqlglot.parse_one(text)
+        return not isinstance(parsed, (exp.Identifier, exp.Literal))
+    except:
+        return False
 
+def optimize_sql(sql_input, temperature=0.1, max_retries=2):
+    current_prompt = sql_input
+    user_notes = []
+    
+    # --- PHASE 1: Input Defensive Check ---
+    if not is_valid_sql(sql_input):
+        print("User Input Invalid")
+        user_notes.append("-- Note: Input did not look like standard SQL. Asking AI to interpret.")
+        current_prompt = f"The following input might not be valid SQL. If it is text describing a query, write the SQL. If it's nonsense, say so: {sql_input}"
+
+    attempts = 0
     while attempts <= max_retries:
-        # 1. Get response from Gemini
+        # --- PHASE 2: Gemini Call ---
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=current_input,
+            contents=current_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 temperature=temperature,
@@ -33,34 +49,30 @@ def optimize_sql(sql_input, temperature=0.1, max_retries=2):
         
         suggested_sql = response.text.strip()
         
-        # Clean up Markdown backticks if the LLM included them
-        if suggested_sql.startswith("```sql"):
-            suggested_sql = suggested_sql.split("```sql")[1].split("```")[0].strip()
-        elif suggested_sql.startswith("```"):
-            suggested_sql = suggested_sql.split("```")[1].split("```")[0].strip()
+        # Clean Markdown backticks
+        if "```" in suggested_sql:
+            suggested_sql = suggested_sql.split("```")[1].replace("sql", "").strip()
 
-        # suggested_sql = "SELECT ( FROM users" # Defensive check test
-        # 2. Validate Syntax with sqlglot
+        # --- PHASE 3: Output Defensive Check ---
         try:
             sqlglot.transpile(suggested_sql)
-            print("Defensive Check Passed")
-            # If it passes, return the clean SQL
-            return suggested_sql
+            
+            # Combine notes and final SQL for the user
+            final_output = "\n".join(user_notes) + "\n" + suggested_sql if user_notes else suggested_sql
+            return final_output.strip()
             
         except sqlglot.errors.ParseError as e:
-            print("Defensive Check Failed : ", e)
             attempts += 1
-            if attempts > max_retries:
-                # If we've exhausted retries, return the last known version 
-                # or raise an error for the user
-                return f"-- [Validation Failed after {max_retries} retries]\n{suggested_sql}"
+            print(f"Attempt {attempts} failed. Error: {e}")
             
-            # 3. SELF-HEAL: Prepare a "Correction" prompt
-            error_details = str(e)
-            current_input = (
-                f"Your previous SQL output had a syntax error:\n{error_details}\n\n"
-                f"Please fix the syntax error in this SQL and return ONLY the code:\n{suggested_sql}"
+            if attempts > max_retries:
+                return f"-- [Validation Failed after {max_retries} attempts]\n-- Error: {e}\n{suggested_sql}"
+            
+            # --- PHASE 4: Self-Correction Loop ---
+            current_prompt = (
+                f"Your previous SQL output had a syntax error: {str(e)}\n"
+                f"Please fix this SQL and return ONLY the corrected code:\n{suggested_sql}"
             )
-            print(f"Retry {attempts}: Syntax error detected. Asking Gemini to self-heal...")
+            user_notes.append(f"-- Note: AI output was corrected for syntax (Attempt {attempts}).")
 
     return None
