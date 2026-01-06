@@ -9,6 +9,7 @@ A minimalist tool designed to optimize and format SQL queries using Google's Gem
 * **CLI Integration**: Designed to fit into developer workflows via Unix pipes and standard input/output.
 * **Modern AI Backend**: Powered by the Gemini 2.5 Flash model for rapid, accurate code analysis.
 * **SQL Defensive Check**: Incorporates `sqlglot` to validate and parse SQL queries before optimization.
+* **Local RAG Support**: Index local repositories with .md and .sql files to provide context-aware optimizations.
 
 ## Installation
 
@@ -47,6 +48,20 @@ sqlclean query.sql
 
 ```
 
+### With Repository Context (RAG)
+
+Index a local repository for context-aware optimization. The repository can contain multiple subfolders for different domains:
+
+```bash
+# Use education schema context
+sqlclean education_query.sql --repo sqlSchema/education
+
+# Use e-commerce schema context  
+sqlclean ecommerce_query.sql --repo sqlSchema/ecommerce
+```
+
+The tool indexes all `.md` and `.sql` files in the specified repository, providing schema-aware optimizations.
+
 ### Piped Input
 
 Integrate with other terminal commands using standard pipes:
@@ -70,6 +85,13 @@ sqlclean input.sql > optimized.sql
 For users who prefer a graphical interface, a live version of the tool is available at:
 **[sqlclean.streamlit.app](https://sqlclean-unrcjopcjq3kawbb4qks3b.streamlit.app/)**
 
+The web interface supports the same RAG functionality as the CLI - you can either specify a server-side repository path or upload .md and .sql files directly from your local machine for context-aware optimizations.
+
+To run locally:
+```bash
+streamlit run webapp.py
+```
+
 ## Technical Architecture
 
 * **Language**: Python 3.13+
@@ -83,6 +105,8 @@ For users who prefer a graphical interface, a live version of the tool is availa
 ```text
 SQL_Cli/
 ├── sqlClean.py      # CLI tool (Typer)
+├── sql_optimizer.py # Core optimization logic with RAG
+├── rag_utils.py     # RAG indexing and retrieval utilities
 ├── webapp.py        # Web app (Streamlit)
 ├── pyproject.toml   # Project metadata and dependencies
 ├── .env.example     # Environment variable template

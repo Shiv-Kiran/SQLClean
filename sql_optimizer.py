@@ -4,12 +4,14 @@ from sqlglot import exp
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from rag_utils import rag_instance
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 SYSTEM_PROMPT = """
 You are a Senior DBA. Optimize the provided SQL for performance and readability.
+Use any provided context from the repository to inform your optimizations, such as best practices, schema information, or common patterns.
 - Return ONLY the optimized SQL. 
 - If the input is not SQL, politely explain what it is and offer to convert it if relevant.
 - Ensure standard keyword capitalization (SELECT, FROM, JOIN).
@@ -25,9 +27,20 @@ def is_valid_sql(text):
     except:
         return False
 
-def optimize_sql(sql_input, temperature=0.1, max_retries=2):
+def optimize_sql(sql_input, repo_path=None, temperature=0.1, max_retries=2):
     current_prompt = sql_input
     user_notes = []
+    
+    # --- RAG Indexing ---
+    if repo_path:
+        print(f"Indexing repository: {repo_path}")
+        rag_instance.index_directory(repo_path)
+        # Retrieve relevant docs
+        relevant_docs = rag_instance.retrieve(sql_input, top_k=3)
+        if relevant_docs:
+            context = "\n".join([f"From {doc['source']}:\n{doc['content']}" for doc in relevant_docs])
+            current_prompt = f"Context from repository:\n{context}\n\nSQL to optimize:\n{sql_input}"
+            user_notes.append("-- Note: Used repository context for optimization.")
     
     # --- PHASE 1: Input Defensive Check ---
     if not is_valid_sql(sql_input):

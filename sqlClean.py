@@ -5,10 +5,12 @@ from sql_optimizer import optimize_sql
 app = typer.Typer() 
 
 @app.command()
-def clean(file: str = typer.Argument(None, help="Path to the SQL file. If omitted, reads from pipe (stdin).")):
+def clean(file: str = typer.Argument(None, help="Path to the SQL file. If omitted, reads from pipe (stdin)."), 
+          repo: str = typer.Option(None, help="Path to the repository to index for RAG (includes .md and .sql files).")):
     """
     Clean and optimize SQL from a file or piped input.
     Example: cat query.sql | python sqlclean.py
+    With RAG: sqlclean query.sql --repo /path/to/repo
     """
     # 2. Get the SQL content
     if file:
@@ -31,7 +33,7 @@ def clean(file: str = typer.Argument(None, help="Path to the SQL file. If omitte
 
     # 3. Call the LLM with System Instructions
     try:
-        optimized = optimize_sql(sql_input)
+        optimized = optimize_sql(sql_input, repo_path=repo)
         
         # 4. Output to user
         typer.echo(optimized)
