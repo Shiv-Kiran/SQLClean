@@ -85,7 +85,19 @@ sqlclean input.sql > optimized.sql
 For users who prefer a graphical interface, a live version of the tool is available at:
 **[sqlclean.streamlit.app](https://sqlclean-unrcjopcjq3kawbb4qks3b.streamlit.app/)**
 
-The web interface supports the same RAG functionality as the CLI - you can either specify a server-side repository path or upload .md and .sql files directly from your local machine for context-aware optimizations.
+The web interface supports the same Classic Sparse RAG (TF-IDF + cosine) functionality as the CLI - you can either specify a server-side repository path or upload .md and .sql files directly from your local machine for context-aware optimizations.
+
+Sparse Lexical RAG : Good for smaller datasets and quick setups. Fails for synonyms, semantic intent and query optimization. 
+
+TODO: Add support for Dense RAG using embeddings and vector databases for better semantic understanding.
+
+* Embedding-based RAG
+* Hybrid RAG (Lexical + Semantic)
+* Structure aware RAG (Using SQL ASTs for better retrieval)
+* Schema-first RAG 
+* Query-Pattern RAG (For specific optimization patterns)
+
+
 
 To run locally:
 ```bash
