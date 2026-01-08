@@ -1,12 +1,12 @@
 from sql_optimizer import optimize_sql
 import os
 import tempfile
-from rag_utils import LocalRAG
+from rag_config import RAGStrategy
 
 # --- CORE LOGIC ---
 # Using the same logic as your CLI
 
-def get_optimized_sql(sql_input, repo_path=None, uploaded_files=None):
+def get_optimized_sql(sql_input, repo_path=None, uploaded_files=None, rag_strategy=RAGStrategy.HYBRID):
     if uploaded_files:
         # Create temporary directory and save uploaded files
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -14,9 +14,9 @@ def get_optimized_sql(sql_input, repo_path=None, uploaded_files=None):
                 file_path = os.path.join(temp_dir, uploaded_file.name)
                 with open(file_path, 'wb') as f:
                     f.write(uploaded_file.getbuffer())
-            return optimize_sql(sql_input, repo_path=temp_dir)
+            return optimize_sql(sql_input, repo_path=temp_dir, rag_strategy=rag_strategy)
     else:
-        return optimize_sql(sql_input, repo_path=repo_path)
+        return optimize_sql(sql_input, repo_path=repo_path, rag_strategy=rag_strategy)
 
 # --- UI DESIGN ---
 # Only import streamlit when running as main script
@@ -28,6 +28,20 @@ if __name__ == "__main__":
     
     st.title("🪄 SQL Clean")
     st.markdown("Transform messy queries into high-performance SQL with optional repository context.")
+    
+    # RAG Strategy Selection
+    st.sidebar.markdown("### RAG Configuration")
+    rag_strategy_name = st.sidebar.radio(
+        "Choose RAG Strategy:",
+        ["Simple (TF-IDF)", "Hybrid (TF-IDF + Chroma + FAISS)"],
+        help="Simple: Fast, lightweight. Hybrid: Better semantic understanding"
+    )
+    rag_strategy = RAGStrategy.SIMPLE if "Simple" in rag_strategy_name else RAGStrategy.HYBRID
+    
+    if rag_strategy == RAGStrategy.HYBRID:
+        st.sidebar.info("🔀 Hybrid RAG combines TF-IDF, Chroma embeddings, and FAISS for best results")
+    else:
+        st.sidebar.info("⚡ Simple RAG uses TF-IDF for fast keyword-based retrieval")
     
     # Input area
     raw_sql = st.text_area("Paste your SQL here:", height=200, placeholder="SELECT * FROM users...")
@@ -68,7 +82,7 @@ if __name__ == "__main__":
                 
             with st.spinner("Optimizing" + context_msg):
                 try:
-                    optimized = get_optimized_sql(raw_sql, repo_path, uploaded_files)
+                    optimized = get_optimized_sql(raw_sql, repo_path, uploaded_files, rag_strategy)
                     
                     # Show results in columns
                     col1, col2 = st.columns(2)

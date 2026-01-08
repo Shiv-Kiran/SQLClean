@@ -2,6 +2,14 @@
 samples.txt
 test.py
 
+# --- Documentation (can be regenerated) ---
+RAG_ARCHITECTURE.md
+HYBRID_RAG_SUMMARY.md
+RAG_VISUAL_GUIDE.txt
+IMPLEMENTATION_CHANGES.md
+QUICK_START.py
+test_rag_strategies.py
+
 # --- Security ---
 # NEVER commit your API keys!
 .env

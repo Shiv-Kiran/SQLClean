@@ -4,7 +4,7 @@ from sqlglot import exp
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from rag_utils import rag_instance
+from rag_config import RAGFactory, RAGStrategy
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -27,20 +27,23 @@ def is_valid_sql(text):
     except:
         return False
 
-def optimize_sql(sql_input, repo_path=None, temperature=0.1, max_retries=2):
+def optimize_sql(sql_input, repo_path=None, temperature=0.1, max_retries=2, rag_strategy=RAGStrategy.HYBRID):
     current_prompt = sql_input
     user_notes = []
     
+    # --- RAG Initialization ---
+    rag = RAGFactory.create_rag(rag_strategy)
+    
     # --- RAG Indexing ---
     if repo_path:
-        print(f"Indexing repository: {repo_path}")
-        rag_instance.index_directory(repo_path)
+        print(f"Indexing repository with {rag_strategy.value} RAG: {repo_path}")
+        rag.index_directory(repo_path)
         # Retrieve relevant docs
-        relevant_docs = rag_instance.retrieve(sql_input, top_k=3)
+        relevant_docs = rag.retrieve(sql_input, top_k=3)
         if relevant_docs:
             context = "\n".join([f"From {doc['source']}:\n{doc['content']}" for doc in relevant_docs])
             current_prompt = f"Context from repository:\n{context}\n\nSQL to optimize:\n{sql_input}"
-            user_notes.append("-- Note: Used repository context for optimization.")
+            user_notes.append(f"-- Note: Used repository context ({rag_strategy.value} RAG) for optimization.")
     
     # --- PHASE 1: Input Defensive Check ---
     if not is_valid_sql(sql_input):
