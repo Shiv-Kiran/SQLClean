@@ -89,7 +89,11 @@ The web interface supports the same Classic Sparse RAG (TF-IDF + cosine) functio
 
 Sparse Lexical RAG : Good for smaller datasets and quick setups. Fails for synonyms, semantic intent and query optimization. 
 
-TODO: Add support for Dense RAG using embeddings and vector databases for better semantic understanding.
+Added Chroma bge-large based Semantic RAG which is better at understanding intent of SQL queries
+
+FAISS vector search for faster and more accurate retrieval.
+
+TODO: Optmizing the sql refactoring with SQL specific optimizations
 
 * Embedding-based RAG
 * Hybrid RAG (Lexical + Semantic)
