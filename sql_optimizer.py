@@ -1,13 +1,12 @@
-import os
 import sqlglot
 from sqlglot import exp
-from dotenv import load_dotenv
 from google import genai
 from rag_config import RAGFactory, RAGStrategy
 from service.candidate_generator import generate_candidate
+from service.settings import load_settings
 
-load_dotenv()
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+SETTINGS = load_settings()
+client = genai.Client(api_key=SETTINGS.google_api_key)
 
 SYSTEM_PROMPT = """
 You are a Senior DBA. Optimize the provided SQL for performance and readability.
@@ -27,7 +26,18 @@ def is_valid_sql(text):
     except:
         return False
 
-def optimize_sql(sql_input, repo_path=None, temperature=0.1, max_retries=2, rag_strategy=RAGStrategy.HYBRID):
+def optimize_sql(
+    sql_input,
+    repo_path=None,
+    temperature=0.1,
+    max_retries=2,
+    rag_strategy=RAGStrategy.HYBRID,
+):
+    if temperature is None:
+        temperature = SETTINGS.default_temperature
+    if max_retries is None:
+        max_retries = SETTINGS.default_max_retries
+
     current_prompt = sql_input
     user_notes = []
     
@@ -59,6 +69,7 @@ def optimize_sql(sql_input, repo_path=None, temperature=0.1, max_retries=2, rag_
             prompt=current_prompt,
             system_prompt=SYSTEM_PROMPT,
             temperature=temperature,
+            model=SETTINGS.model_name,
         )
 
         # --- PHASE 3: Output Defensive Check ---
