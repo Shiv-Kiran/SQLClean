@@ -3,8 +3,8 @@ import sqlglot
 from sqlglot import exp
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
 from rag_config import RAGFactory, RAGStrategy
+from service.candidate_generator import generate_candidate
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -53,21 +53,13 @@ def optimize_sql(sql_input, repo_path=None, temperature=0.1, max_retries=2, rag_
 
     attempts = 0
     while attempts <= max_retries:
-        # --- PHASE 2: Gemini Call ---
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=current_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=temperature,
-            )
+        # --- PHASE 2: Candidate Generation ---
+        suggested_sql = generate_candidate(
+            client=client,
+            prompt=current_prompt,
+            system_prompt=SYSTEM_PROMPT,
+            temperature=temperature,
         )
-        
-        suggested_sql = response.text.strip()
-        
-        # Clean Markdown backticks
-        if "```" in suggested_sql:
-            suggested_sql = suggested_sql.split("```")[1].replace("sql", "").strip()
 
         # --- PHASE 3: Output Defensive Check ---
         try:
