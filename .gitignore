@@ -36,6 +36,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+implementation_plan.md
+tasks.md
 
 # --- Virtual Environments ---
 .venv/
