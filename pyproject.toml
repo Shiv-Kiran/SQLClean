@@ -2,8 +2,27 @@
 name = "sqlclean"
 version = "0.1.0"
 dependencies = [
-    "typer[all]",
-    "google-genai",
+    "typer[all]==0.12.5",
+    "google-genai==0.8.0",
+    "python-dotenv==1.0.1",
+    "sqlglot==25.31.3",
+    "numpy==1.26.4",
+    "scikit-learn==1.5.2",
+]
+
+[project.optional-dependencies]
+web = [
+    "streamlit==1.39.0",
+]
+hybrid = [
+    "chromadb==0.5.5",
+    "sentence-transformers==3.2.1",
+    "faiss-cpu==1.8.0.post1",
+]
+dev = [
+    "pytest==8.3.3",
+    "pytest-mock==3.14.0",
+    "httpx==0.27.2",
 ]
 
 [project.scripts]
