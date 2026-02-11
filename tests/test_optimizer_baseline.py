@@ -62,6 +62,43 @@ def _install_import_stubs():
     rag_config_module.RAGStrategy = _RAGStrategy
     sys.modules["rag_config"] = rag_config_module
 
+    # Stub sqlglot for environments where it is not installed.
+    if "sqlglot" not in sys.modules:
+        sqlglot_module = types.ModuleType("sqlglot")
+        exp_module = types.ModuleType("sqlglot.exp")
+
+        class Identifier:
+            pass
+
+        class Literal:
+            pass
+
+        class ParseError(Exception):
+            pass
+
+        def parse_one(text):
+            normalized = (text or "").strip().lower()
+            if normalized.startswith("select") or normalized.startswith("with"):
+                return object()
+            if normalized:
+                return Identifier()
+            raise ParseError("empty SQL")
+
+        def transpile(text):
+            sql_text = (text or "").strip()
+            if not sql_text or sql_text.endswith("("):
+                raise ParseError("bad sql")
+            return [sql_text]
+
+        exp_module.Identifier = Identifier
+        exp_module.Literal = Literal
+        sqlglot_module.exp = exp_module
+        sqlglot_module.parse_one = parse_one
+        sqlglot_module.transpile = transpile
+        sqlglot_module.errors = types.SimpleNamespace(ParseError=ParseError)
+        sys.modules["sqlglot"] = sqlglot_module
+        sys.modules["sqlglot.exp"] = exp_module
+
 
 def _import_sql_optimizer():
     _install_import_stubs()
@@ -112,4 +149,3 @@ class TestOptimizerBaseline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
