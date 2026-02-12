@@ -19,6 +19,9 @@ hybrid = [
     "sentence-transformers==3.2.1",
     "faiss-cpu==1.8.0.post1",
 ]
+verify = [
+    "psycopg[binary]==3.2.3",
+]
 dev = [
     "pytest==8.3.3",
     "pytest-mock==3.14.0",

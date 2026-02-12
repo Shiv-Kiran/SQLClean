@@ -8,3 +8,4 @@ streamlit==1.39.0
 chromadb==0.5.5
 sentence-transformers==3.2.1
 faiss-cpu==1.8.0.post1
+psycopg[binary]==3.2.3
