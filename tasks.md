@@ -40,7 +40,7 @@
 | P2-5 | Build ranking engine (safety gate + cost score + tie-breakers) | `service/ranker.py` | P2-1, P2-3 | DONE |
 | P2-6 | Integrate validator + runner + ranker into `optimize_sql(...)` path when `execution_verify=True` | `sql_optimizer.py` | P2-5 | DONE |
 | P2-7 | Add graceful fallback when verifier DB unavailable | `sql_optimizer.py` | P2-6 | DONE |
-| P2-8 | Add integration tests with dockerized/local postgres sandbox | `tests/test_execution_verify.py` | P2-6 | DONE |
+| P2-8 | Add integration tests with dockerized/local postgres sandbox | `tests/test_execution_verify_integration.py` | P2-6 | DONE |
 | P2-9 | Compatibility gate: `execution_verify=False` path remains unchanged | tests | P2-7, P2-8 | DONE |
 
 ## Phase 3 - Backend Service API
