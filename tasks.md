@@ -33,15 +33,15 @@
 
 | ID | Task | Files | Depends On | Status |
 |---|---|---|---|---|
-| P2-1 | Implement AST safety validator (allowlist/denylist/read-only) | `service/safety_validator.py` | P1-4 | TODO |
-| P2-2 | Add complexity guardrails (join/subquery thresholds) | `service/safety_validator.py` | P2-1 | TODO |
-| P2-3 | Add PostgreSQL explain runner (`FORMAT JSON`) | `service/plan_runner.py` | P0-4 | TODO |
-| P2-4 | Add optional analyze mode with hard timeout budget | `service/plan_runner.py` | P2-3 | TODO |
-| P2-5 | Build ranking engine (safety gate + cost score + tie-breakers) | `service/ranker.py` | P2-1, P2-3 | TODO |
-| P2-6 | Integrate validator + runner + ranker into `optimize_sql(...)` path when `execution_verify=True` | `sql_optimizer.py` | P2-5 | TODO |
-| P2-7 | Add graceful fallback when verifier DB unavailable | `sql_optimizer.py` | P2-6 | TODO |
-| P2-8 | Add integration tests with dockerized/local postgres sandbox | `tests/test_execution_verify.py` | P2-6 | TODO |
-| P2-9 | Compatibility gate: `execution_verify=False` path remains unchanged | tests | P2-7, P2-8 | TODO |
+| P2-1 | Implement AST safety validator (allowlist/denylist/read-only) | `service/safety_validator.py` | P1-4 | DONE |
+| P2-2 | Add complexity guardrails (join/subquery thresholds) | `service/safety_validator.py` | P2-1 | DONE |
+| P2-3 | Add PostgreSQL explain runner (`FORMAT JSON`) | `service/plan_runner.py` | P0-4 | DONE |
+| P2-4 | Add optional analyze mode with hard timeout budget | `service/plan_runner.py` | P2-3 | DONE |
+| P2-5 | Build ranking engine (safety gate + cost score + tie-breakers) | `service/ranker.py` | P2-1, P2-3 | DONE |
+| P2-6 | Integrate validator + runner + ranker into `optimize_sql(...)` path when `execution_verify=True` | `sql_optimizer.py` | P2-5 | DONE |
+| P2-7 | Add graceful fallback when verifier DB unavailable | `sql_optimizer.py` | P2-6 | DONE |
+| P2-8 | Add integration tests with dockerized/local postgres sandbox | `tests/test_execution_verify.py` | P2-6 | DONE |
+| P2-9 | Compatibility gate: `execution_verify=False` path remains unchanged | tests | P2-7, P2-8 | DONE |
 
 ## Phase 3 - Backend Service API
 
