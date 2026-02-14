@@ -8,7 +8,6 @@ from typing import Any, Dict, Optional
 from api.idempotency import IdempotencyStore
 from api.rate_limit import RateLimiter
 from api.schemas import OptimizeRequest
-from service.orchestrator import run_optimization
 from service.settings import load_settings
 from worker.jobs import create_job_store
 from worker.runner import JobRunner, WorkerConfig, WorkerLoop
@@ -24,6 +23,12 @@ class NotFoundError(Exception):
 
 class ValidationError(Exception):
     pass
+
+
+def _default_processor(payload: Dict[str, Any]) -> Dict[str, Any]:
+    from service.orchestrator import run_optimization
+
+    return run_optimization(payload)
 
 
 @dataclass
@@ -47,7 +52,7 @@ class SQLCleanAPI:
         start_worker: bool = False,
     ) -> "SQLCleanAPI":
         cfg = settings or load_settings()
-        proc = processor or run_optimization
+        proc = processor or _default_processor
         store = job_store or create_job_store(
             backend=getattr(cfg, "job_store_backend", "memory"),
             redis_url=getattr(cfg, "redis_url", None),
@@ -208,4 +213,3 @@ def create_fastapi_app(api_service: Optional[SQLCleanAPI] = None):
             raise HTTPException(status_code=500, detail=str(exc))
 
     return app
-

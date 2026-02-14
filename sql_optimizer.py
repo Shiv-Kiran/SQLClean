@@ -5,6 +5,7 @@ from rag_config import RAGFactory, RAGStrategy
 from service.candidate_generator import generate_candidate
 from service.plan_runner import PlanRunner, PlanRunnerConfig, PlanRunnerUnavailable
 from service.ranker import CandidateEvaluation, rank_candidates
+from service.retry import RetryPolicy, execute_with_retry
 from service.safety_validator import SafetyLimits, validate_sql_safety
 from service.settings import load_settings
 
@@ -71,13 +72,25 @@ def _generate_candidate_with_retry(initial_prompt, temperature, max_retries):
     last_error = None
 
     while attempts <= max_retries:
-        suggested_sql = generate_candidate(
-            client=client,
-            prompt=current_prompt,
-            system_prompt=SYSTEM_PROMPT,
-            temperature=temperature,
-            model=SETTINGS.model_name,
-        )
+        try:
+            suggested_sql = execute_with_retry(
+                fn=lambda: generate_candidate(
+                    client=client,
+                    prompt=current_prompt,
+                    system_prompt=SYSTEM_PROMPT,
+                    temperature=temperature,
+                    model=SETTINGS.model_name,
+                ),
+                policy=RetryPolicy(max_attempts=2, base_delay_seconds=0.1, max_delay_seconds=0.5),
+                retry_exceptions=(Exception,),
+            )
+        except Exception as exc:
+            attempts += 1
+            last_error = exc
+            print(f"Attempt {attempts} failed. Error: {exc}")
+            if attempts > max_retries:
+                return suggested_sql, last_error, retry_notes
+            continue
 
         try:
             sqlglot.transpile(suggested_sql)
@@ -229,7 +242,15 @@ def optimize_sql(
             evaluation.verification_status = "safety_rejected"
         elif plan_runner is not None:
             try:
-                plan_result = plan_runner.explain_sql(sql_candidate, analyze=explain_analyze)
+                plan_result = execute_with_retry(
+                    fn=lambda: plan_runner.explain_sql(sql_candidate, analyze=explain_analyze),
+                    policy=RetryPolicy(max_attempts=2, base_delay_seconds=0.1, max_delay_seconds=0.5),
+                    retry_exceptions=(PlanRunnerUnavailable,),
+                    is_retryable=lambda exc: (
+                        "not configured" not in str(exc).lower()
+                        and "not installed" not in str(exc).lower()
+                    ),
+                )
                 evaluation.plan_metrics = plan_result.get("metrics", {})
                 evaluation.verification_status = "verified"
             except PlanRunnerUnavailable as exc:
