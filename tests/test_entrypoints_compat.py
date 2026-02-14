@@ -67,6 +67,22 @@ def _import_webapp_with_stubs(fake_optimize_sql):
     rag_config_stub.RAGStrategy = FakeRAGStrategy
     sys.modules["rag_config"] = rag_config_stub
 
+    api_client_stub = types.ModuleType("api.client")
+    api_client_stub.optimize_sql_via_api = lambda base_url, payload: {"optimized_sql": "API_RESULT"}
+    sys.modules["api.client"] = api_client_stub
+
+    service_settings_stub = types.ModuleType("service.settings")
+
+    class _Settings:
+        api_mode = False
+        api_base_url = "http://127.0.0.1:8000"
+        default_candidate_count = 1
+        default_execution_verify = False
+        default_explain_analyze = False
+
+    service_settings_stub.load_settings = lambda: _Settings()
+    sys.modules["service.settings"] = service_settings_stub
+
     sys.modules.pop("webapp", None)
     return importlib.import_module("webapp"), FakeRAGStrategy
 
@@ -141,4 +157,3 @@ class TestEntryPointCompatibility(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
