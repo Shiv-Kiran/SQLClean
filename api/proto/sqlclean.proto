@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package sqlclean.v1;
+
+message OptimizeRequest {
+  string sql_input = 1;
+  string repo_path = 2;
+  double temperature = 3;
+  int32 max_retries = 4;
+  string rag_strategy = 5;
+  int32 candidate_count = 6;
+  bool execution_verify = 7;
+  bool explain_analyze = 8;
+  int32 verify_statement_timeout_ms = 9;
+}
+
+message OptimizeResponse {
+  string optimized_sql = 1;
+  map<string, string> meta = 2;
+}
+
+message SubmitJobRequest {
+  OptimizeRequest optimize = 1;
+  string idempotency_key = 2;
+}
+
+message SubmitJobResponse {
+  string job_id = 1;
+  string status = 2;
+  bool created = 3;
+}
+
+message GetJobRequest {
+  string job_id = 1;
+}
+
+message GetJobResponse {
+  string job_id = 1;
+  string status = 2;
+  string error = 3;
+  string result_json = 4;
+}
+
+service SQLCleanService {
+  rpc Optimize(OptimizeRequest) returns (OptimizeResponse);
+  rpc SubmitJob(SubmitJobRequest) returns (SubmitJobResponse);
+  rpc GetJob(GetJobRequest) returns (GetJobResponse);
+}
+
