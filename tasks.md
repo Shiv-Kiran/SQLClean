@@ -47,26 +47,26 @@
 
 | ID | Task | Files | Depends On | Status |
 |---|---|---|---|---|
-| P3-1 | Build FastAPI app skeleton + health endpoint | `api/fastapi_app.py` | P2-6 | TODO |
-| P3-2 | Implement `POST /v1/optimize` sync endpoint | `api/fastapi_app.py`, `api/schemas.py` | P3-1 | TODO |
-| P3-3 | Implement `POST /v1/jobs` and `GET /v1/jobs/{id}` contracts | `api/fastapi_app.py`, `api/schemas.py` | P3-1 | TODO |
-| P3-4 | Add gRPC proto and service wrapper | `api/proto/*.proto`, `api/grpc_server.py` | P2-6 | TODO |
-| P3-5 | Add contract tests (FastAPI vs gRPC parity) | `tests/test_api_contract.py` | P3-2, P3-4 | TODO |
-| P3-6 | Add optional API mode toggle for `webapp.py` (local mode default) | `webapp.py`, `service/settings.py` | P3-2 | TODO |
-| P3-7 | Compatibility gate: CLI/web local mode still works without API server | tests/manual | P3-6 | TODO |
+| P3-1 | Build FastAPI app skeleton + health endpoint | `api/fastapi_app.py` | P2-6 | DONE |
+| P3-2 | Implement `POST /v1/optimize` sync endpoint | `api/fastapi_app.py`, `api/schemas.py` | P3-1 | DONE |
+| P3-3 | Implement `POST /v1/jobs` and `GET /v1/jobs/{id}` contracts | `api/fastapi_app.py`, `api/schemas.py` | P3-1 | DONE |
+| P3-4 | Add gRPC proto and service wrapper | `api/proto/*.proto`, `api/grpc_server.py` | P2-6 | DONE |
+| P3-5 | Add contract tests (FastAPI vs gRPC parity) | `tests/test_api_contract.py` | P3-2, P3-4 | DONE |
+| P3-6 | Add optional API mode toggle for `webapp.py` (local mode default) | `webapp.py`, `service/settings.py` | P3-2 | DONE |
+| P3-7 | Compatibility gate: CLI/web local mode still works without API server | tests/manual | P3-6 | DONE |
 
 ## Phase 4 - Async, Idempotency, Rate Limits, Retries
 
 | ID | Task | Files | Depends On | Status |
 |---|---|---|---|---|
-| P4-1 | Add Redis-backed job queue + worker skeleton | `worker/jobs.py`, `worker/runner.py` | P3-3 | TODO |
-| P4-2 | Route async API jobs through queue and shared optimizer service | `api/fastapi_app.py`, `worker/runner.py` | P4-1 | TODO |
-| P4-3 | Implement idempotency key store and middleware | `api/idempotency.py` | P3-3 | TODO |
-| P4-4 | Implement per-client rate limiting middleware | `api/rate_limit.py` | P3-2 | TODO |
-| P4-5 | Add bounded retries/backoff for LLM and verifier errors | `service/retry.py`, `sql_optimizer.py` | P2-6 | TODO |
-| P4-6 | Add dead-letter handling and terminal failure states | `worker/jobs.py` | P4-1 | TODO |
-| P4-7 | Add integration tests for idempotency/rate limit/retry behavior | `tests/test_reliability.py` | P4-6 | TODO |
-| P4-8 | Compatibility gate: sync API + CLI outputs match async final results for same request | tests | P4-7 | TODO |
+| P4-1 | Add Redis-backed job queue + worker skeleton | `worker/jobs.py`, `worker/runner.py` | P3-3 | DONE |
+| P4-2 | Route async API jobs through queue and shared optimizer service | `api/fastapi_app.py`, `worker/runner.py` | P4-1 | DONE |
+| P4-3 | Implement idempotency key store and middleware | `api/idempotency.py` | P3-3 | DONE |
+| P4-4 | Implement per-client rate limiting middleware | `api/rate_limit.py` | P3-2 | DONE |
+| P4-5 | Add bounded retries/backoff for LLM and verifier errors | `service/retry.py`, `sql_optimizer.py` | P2-6 | DONE |
+| P4-6 | Add dead-letter handling and terminal failure states | `worker/jobs.py` | P4-1 | DONE |
+| P4-7 | Add integration tests for idempotency/rate limit/retry behavior | `tests/test_reliability.py` | P4-6 | DONE |
+| P4-8 | Compatibility gate: sync API + CLI outputs match async final results for same request | tests | P4-7 | DONE |
 
 ## Phase 5 - Observability, Benchmarks, Hardening
 
