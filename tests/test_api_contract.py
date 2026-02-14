@@ -73,7 +73,22 @@ class TestApiContract(unittest.TestCase):
         with self.assertRaises(RateLimitExceededError):
             api.optimize_sync({"sql_input": "SELECT 1"}, client_id="user-1")
 
+    def test_sync_and_async_paths_return_equivalent_result(self):
+        def processor(payload):
+            sql = payload.get("sql_input", "")
+            return {"optimized_sql": f"OPT::{sql}", "meta": {"source": "processor"}}
+
+        api = SQLCleanAPI.create(settings=_settings(), processor=processor)
+        payload = {"sql_input": "SELECT customer_id FROM orders"}
+
+        sync = api.optimize_sync(payload=payload)
+        submitted = api.submit_job(payload=payload, idempotency_key="eq-1")
+        api.process_next_job()
+        job = api.get_job(submitted["job_id"])
+        async_result = job.get("result", {})
+
+        self.assertEqual(sync["optimized_sql"], async_result["optimized_sql"])
+
 
 if __name__ == "__main__":
     unittest.main()
-
